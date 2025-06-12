@@ -68,10 +68,10 @@ To run this project locally, you will need Node.js and the Firebase CLI installe
 
 This is a proprietary project. Please see the `LICENSE` file for more information.
 
-Copyright (c) 2025 [Your Name]
+Copyright (c) 2025 Abhirup Choudhury
 
 ---
 
 ### Contact
 
-For questions or support, please email: `support@yourfuturepawconnectdomain.com`
+For questions or support, please email: `abhirup2003@gmail.com`
