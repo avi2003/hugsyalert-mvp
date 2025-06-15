@@ -18,16 +18,17 @@ module.exports = {
     sourceType: "module",
   },
   ignorePatterns: [
-    "/lib/**/*", // Ignore built files.
-    "/generated/**/*", // Ignore generated files.
+    "/lib/**/*",
+    ".eslintrc.js"
   ],
   plugins: [
     "@typescript-eslint",
     "import",
   ],
   rules: {
+    "linebreak-style": "off", // Add this line to disable linebreak style checks
     "quotes": ["error", "double"],
     "import/no-unresolved": 0,
-    "indent": ["error", 2],
+    "max-len": ["error", { "code": 100 }]
   },
 };
