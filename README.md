@@ -1,4 +1,4 @@
-# 🐾 PawConnect MVP
+# 🐾 HugsyAlert MVP
 
 [![Project Status: WIP – Initial MVP Build](https://img.shields.io/badge/status-in%20progress-yellow.svg)](https://shields.io/)
 
@@ -8,7 +8,7 @@ A GenAI-powered pet safety net that provides peace of mind to single pet owners 
 
 ### The Core Problem
 
-Single pet owners (~18M households in the US) lack a reliable, automated system to ensure their pet's immediate care if they are suddenly incapacitated or unable to return home. PawConnect solves this core anxiety by intelligently alerting a trusted network of helpers.
+Single pet owners (~18M households in the US) lack a reliable, automated system to ensure their pet's immediate care if they are suddenly incapacitated or unable to return home. HugsyAlert solves this core anxiety by intelligently alerting a trusted network of helpers.
 
 ### Tech Stack (Firebase-First Architecture)
 
@@ -34,8 +34,8 @@ To run this project locally, you will need Node.js and the Firebase CLI installe
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/pawconnect-mvp.git
-    cd pawconnect-mvp
+    git clone https://github.com/your-username/HugsyAlert-mvp.git
+    cd HugsyAlert-mvp
     ```
 
 2.  **Install dependencies:**

@@ -6,29 +6,29 @@ module.exports = {
   },
   extends: [
     "eslint:recommended",
-    "plugin:import/errors",
-    "plugin:import/warnings",
-    "plugin:import/typescript",
-    "google",
     "plugin:@typescript-eslint/recommended",
+    "prettier"
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: ["tsconfig.json", "tsconfig.dev.json"],
+    project: ["tsconfig.dev.json"], // Changed from tsconfig.json to tsconfig.dev.json
     sourceType: "module",
   },
   ignorePatterns: [
     "/lib/**/*",
-    ".eslintrc.js"
+    "/dist/**/*",
+    ".eslintrc.js"  // Add this line to ignore the eslint config file
   ],
   plugins: [
     "@typescript-eslint",
-    "import",
+    "prettier"
   ],
   rules: {
-    "linebreak-style": "off", // Add this line to disable linebreak style checks
     "quotes": ["error", "double"],
-    "import/no-unresolved": 0,
-    "max-len": ["error", { "code": 100 }]
+    "indent": ["error", 2],
+    "object-curly-spacing": ["error", "never"],
+    "max-len": ["error", {code: 100}],
+    "@typescript-eslint/no-explicit-any": "warn",
+    "eol-last": ["error", "always"]
   },
 };
