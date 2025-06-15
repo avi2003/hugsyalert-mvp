@@ -1,0 +1,21 @@
+{
+  "name": "alert-system",
+  "version": "1.0.0",
+  "description": "A cloud function for monitoring user check-ins and sending alerts.",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "tsc",
+    "deploy": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "firebase-functions": "^3.14.1",
+    "twilio": "^3.67.0",
+    "sendgrid": "^6.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.4"
+  },
+  "engines": {
+    "node": "14"
+  }
+}
