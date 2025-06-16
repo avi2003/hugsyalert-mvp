@@ -48,7 +48,7 @@ export const checkIn = functions.https.onCall(async (request) => {
   }
 });
 
-export const scheduledAlertEngine = onSchedule("every 15 minutes", async (_event) => {
+export const scheduledAlertEngine = onSchedule("every 15 minutes", async () => {
   try {
     const now = admin.firestore.Timestamp.now();
     const checkinFrequencyHours = 24;
