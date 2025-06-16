@@ -1,3 +1,6 @@
+import { admin } from 'firebase-admin';
+import { FirebaseFirestore } from "firebase-admin/firestore";
+
 export interface User {
   id: string;
   last_checkin: Date;
@@ -5,18 +8,10 @@ export interface User {
   alert_rules: AlertRule[];
 }
 
+// The shape of a single alert instruction
 export interface AlertRule {
-  id: string;
-  petDossierId: string;
-  description: string;
-  type: "medication" | "feeding" | "exercise" | "other";
-  frequency: "daily" | "weekly" | "monthly" | "custom";
-  customFrequency?: string;
-  timeOfDay?: string[];
-  isActive: boolean;
-  assignedHelpers: string[]; // Helper IDs
-  createdAt: Date;
-  updatedAt: Date;
+  method: "SMS" | "EMAIL";
+  to: string; // The phone number or email address
 }
 
 export interface AlertLog {
@@ -53,14 +48,11 @@ export interface Helper {
     updatedAt: Date;
 }
 
+// The main user document shape
 export interface HugsyUser {
-    id: string;
-    email: string;
-    displayName: string;
-    phoneNumber?: string;
-    pets: string[]; // PetDossier IDs
-    helpers: string[]; // Helper IDs
-    alertRules: string[]; // AlertRule IDs
-    createdAt: Date;
-    updatedAt: Date;
+  email: string;
+  last_checkin: FirebaseFirestore.Timestamp; // Use the more specific Timestamp type
+  checkin_frequency_hours: number;
+  pet_dossier?: PetDossier;
+  alert_rules?: AlertRule[];
 }

@@ -1,3 +1,6 @@
+// At the top of functions/src/index.ts
+
+import {HugsyUser} from "./types"; 
 import * as functions from "firebase-functions/v2";
 import {onSchedule} from "firebase-functions/v2/scheduler";
 import {onRequest} from "firebase-functions/v2/https";
@@ -49,58 +52,51 @@ export const checkIn = functions.https.onCall(async (request) => {
 });
 
 export const scheduledAlertEngine = onSchedule("every 15 minutes", async () => {
-  try {
-    const now = admin.firestore.Timestamp.now();
-    const checkinFrequencyHours = 24;
-    const cutoffTime = new Date(now.toMillis() - checkinFrequencyHours * 60 * 60 * 1000);
+  functions.logger.info("Running scheduled alert engine...");
 
-    const usersSnapshot = await admin
-      .firestore()
-      .collection("users")
-      .where("last_checkin", "<", cutoffTime)
-      .get();
+  // 1. Get ALL users from the collection.
+  const usersSnapshot = await admin.firestore().collection("users").get();
 
-    // Process users in parallel with Promise.all
-    await Promise.all(
-      usersSnapshot.docs.map(async (userDoc) => {
-        const userData = userDoc.data();
-        const alertRules = userData.alert_rules || [];
-
-        // Process each rule sequentially for a user
-        for (const rule of alertRules) {
-          try {
-            if (rule.type === "sms") {
-              await sendSmsAlert(userData.phoneNumber, rule.message);
-            } else if (rule.type === "email") {
-              await sendEmailAlert(userData.email, rule.subject, rule.message);
-            }
-
-            // Log success immediately
-            await admin.firestore().collection("alert_logs").add({
-              userId: userDoc.id,
-              status: "success",
-              rule,
-              timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            });
-          } catch (error) {
-            // Log failure immediately
-            await admin.firestore().collection("alert_logs").add({
-              userId: userDoc.id,
-              status: "fail",
-              rule,
-              error: error instanceof Error ? error.message : "Unknown error",
-              timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            });
-          }
-        }
-      })
-    );
-
-    console.log("Alert engine run completed successfully");
-  } catch (error) {
-    console.error("Alert engine failed:", error);
-    throw new Error("Alert engine execution failed");
+  if (usersSnapshot.empty) {
+    functions.logger.info("No users found in the database.");
+    return;
   }
+
+  functions.logger.info(`Found ${usersSnapshot.size} total users. Checking each one...`);
+
+  // 2. Loop through each user to check them individually.
+  for (const doc of usersSnapshot.docs) {
+    const user = doc.data() as HugsyUser;
+    const checkinFrequencyHours = user.checkin_frequency_hours || 24;
+    
+    if (!user.last_checkin) {
+      functions.logger.info(`User ${doc.id} has no last_checkin time. Skipping.`);
+      continue;
+    }
+    
+    const lastCheckinTime = user.last_checkin.toDate();
+    const cutoffTime = new Date(Date.now() - checkinFrequencyHours * 60 * 60 * 1000);
+
+    if (lastCheckinTime < cutoffTime) {
+      functions.logger.info(`ALERT: User ${doc.id} is late! Last check-in: ${lastCheckinTime}`);
+      
+      const rules = user.alert_rules || [];
+      for (const rule of rules) {
+        const messageBody = `HugsyAlert Emergency: ${user.email} has missed their safety check-in. ` +
+          `Their pet, ${user.pet_dossier?.name || "no name set"}, may need your help.`;
+        
+        if (rule.method === "SMS") {
+          await sendSmsAlert(rule.to, messageBody);
+        } else if (rule.method === "EMAIL") {
+          await sendEmailAlert(rule.to, "HugsyAlert Emergency!", messageBody);
+        }
+      }
+    } else {
+      functions.logger.info(`User ${doc.id} is OK. Last check-in: ${lastCheckinTime}`);
+    }
+  }
+
+  functions.logger.info("Alert engine run completed successfully.");
 });
 
 /**
