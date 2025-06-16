@@ -1,5 +1,6 @@
 import * as functions from "firebase-functions/v2";
 import {onSchedule} from "firebase-functions/v2/scheduler";
+import {onRequest} from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import {sendSmsAlert} from "./services/twilio";
 import {sendEmailAlert} from "./services/sendgrid";
@@ -100,4 +101,12 @@ export const scheduledAlertEngine = onSchedule("every 15 minutes", async (_event
     console.error("Alert engine failed:", error);
     throw new Error("Alert engine execution failed");
   }
+});
+
+/**
+ * A simple HTTP function to satisfy the Cloud Run health check requirement
+ * for V2 functions. This function is not meant to be called directly.
+ */
+export const healthCheck = onRequest((request, response) => {
+  response.send("HugsyAlert backend is running!");
 });
