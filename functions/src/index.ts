@@ -1,8 +1,8 @@
 import * as functions from "firebase-functions/v2";
+import {onSchedule} from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
 import {sendSmsAlert} from "./services/twilio";
 import {sendEmailAlert} from "./services/sendgrid";
-import type {AlertLog} from "./types";
 
 // Initialize the Firebase Admin SDK.
 // This gives your functions access to your Firestore database.
@@ -47,43 +47,57 @@ export const checkIn = functions.https.onCall(async (request) => {
   }
 });
 
-export const scheduledAlertFunction = functions.pubsub
-  .onSchedule("every 15 minutes")
-  .onRun(async () => {
+export const scheduledAlertEngine = onSchedule("every 15 minutes", async (_event) => {
+  try {
     const now = admin.firestore.Timestamp.now();
     const checkinFrequencyHours = 24;
+    const cutoffTime = new Date(now.toMillis() - checkinFrequencyHours * 60 * 60 * 1000);
 
     const usersSnapshot = await admin
       .firestore()
       .collection("users")
-      .where("last_checkin", "<", new Date(now.toMillis() - checkinFrequencyHours * 60 * 60 * 1000))
+      .where("last_checkin", "<", cutoffTime)
       .get();
 
-    const alertLogs: AlertLog[] = [];
+    // Process users in parallel with Promise.all
+    await Promise.all(
+      usersSnapshot.docs.map(async (userDoc) => {
+        const userData = userDoc.data();
+        const alertRules = userData.alert_rules || [];
 
-    usersSnapshot.forEach(async (userDoc) => {
-      const userData = userDoc.data();
-      const alertRules = userData.alert_rules || [];
+        // Process each rule sequentially for a user
+        for (const rule of alertRules) {
+          try {
+            if (rule.type === "sms") {
+              await sendSmsAlert(userData.phoneNumber, rule.message);
+            } else if (rule.type === "email") {
+              await sendEmailAlert(userData.email, rule.subject, rule.message);
+            }
 
-      for (const rule of alertRules) {
-        try {
-          if (rule.type === "sms") {
-            await sendSmsAlert(userData.phoneNumber, rule.message);
-          } else if (rule.type === "email") {
-            await sendEmailAlert(userData.email, rule.subject, rule.message);
+            // Log success immediately
+            await admin.firestore().collection("alert_logs").add({
+              userId: userDoc.id,
+              status: "success",
+              rule,
+              timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          } catch (error) {
+            // Log failure immediately
+            await admin.firestore().collection("alert_logs").add({
+              userId: userDoc.id,
+              status: "fail",
+              rule,
+              error: error instanceof Error ? error.message : "Unknown error",
+              timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            });
           }
-          alertLogs.push({userId: userDoc.id, status: "success", rule});
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Unknown error";
-          alertLogs.push({userId: userDoc.id, status: "fail", rule, error: errorMessage});
         }
-      }
-    });
+      })
+    );
 
-    // Log the alert attempts
-    for (const log of alertLogs) {
-      await admin.firestore().collection("alert_logs").add(log);
-    }
-
-    return null;
-  });
+    console.log("Alert engine run completed successfully");
+  } catch (error) {
+    console.error("Alert engine failed:", error);
+    throw new Error("Alert engine execution failed");
+  }
+});
