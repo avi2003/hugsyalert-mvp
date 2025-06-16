@@ -1,3 +1,6 @@
+// In functions/src/index.ts
+
+// v1.0.1 - Forcing redeployment after fixing secret initialization.
 import {HugsyUser} from "./types"; 
 import * as functions from "firebase-functions/v2";
 import * as scheduler from "firebase-functions/v2/scheduler";
