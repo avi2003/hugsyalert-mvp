@@ -1,5 +1,4 @@
-import { admin } from 'firebase-admin';
-import { FirebaseFirestore } from "firebase-admin/firestore";
+import {Timestamp} from "firebase-admin/firestore";
 
 export interface User {
   id: string;
@@ -22,36 +21,36 @@ export interface AlertLog {
 }
 
 export interface PetDossier {
-    id: string;
-    name: string;
-    species: "dog" | "cat" | "other";
-    breed?: string;
-    age?: number;
-    weight?: number;
-    medicalConditions?: string[];
-    medications?: string[];
-    vetContact?: string;
-    ownerNotes?: string;
-    createdAt: Date;
-    updatedAt: Date;
+  id: string;
+  name: string;
+  species: "dog" | "cat" | "other";
+  breed?: string;
+  age?: number;
+  weight?: number;
+  medicalConditions?: string[];
+  medications?: string[];
+  vetContact?: string;
+  ownerNotes?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Helper {
-    id: string;
-    name: string;
-    phone: string;
-    email: string;
-    relationship: string;
-    isEmergencyContact: boolean;
-    availabilityNotes?: string;
-    createdAt: Date;
-    updatedAt: Date;
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  relationship: string;
+  isEmergencyContact: boolean;
+  availabilityNotes?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // The main user document shape
 export interface HugsyUser {
   email: string;
-  last_checkin: FirebaseFirestore.Timestamp; // Use the more specific Timestamp type
+  last_checkin: Timestamp; // Changed to use Timestamp directly
   checkin_frequency_hours: number;
   pet_dossier?: PetDossier;
   alert_rules?: AlertRule[];
