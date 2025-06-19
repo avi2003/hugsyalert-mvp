@@ -73,3 +73,9 @@ functions/firebase-export-*/
 
 # Ignore local environment secrets
 .runtimeconfig.json
+
+# .gitignore (in the root of your project)
+
+# dotenv environment variables file
+.env
+.env.local

@@ -65,7 +65,7 @@ export const checkIn = functions.https.onCall(
 
 export const scheduledAlertEngine = scheduler.onSchedule(
   "every 15 minutes",
-  async (_event: scheduler.ScheduledEvent) => {
+  async () => {
     functions.logger.info("Running scheduled alert engine...");
 
     // 1. Get ALL users from the collection.
