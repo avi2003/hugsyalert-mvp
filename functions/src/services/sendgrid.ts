@@ -1,4 +1,4 @@
-import * as sgMail from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail';
 
 export const sendEmailAlert = async (to: string, subject: string, text: string): Promise<void> => {
   const apiKey = process.env.SENDGRID_KEY;
