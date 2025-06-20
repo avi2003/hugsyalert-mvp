@@ -7,6 +7,7 @@ import * as scheduler from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
 import {sendSmsAlert} from "./services/twilio";
 import {sendEmailAlert} from "./services/sendgrid";
+import {sendPushNotification} from "./services/fcm"; // <-- Import the new service
 
 // Define the secrets your project will use
 functions.setGlobalOptions({
@@ -110,6 +111,16 @@ export const scheduledAlertEngine = scheduler.onSchedule(
             await sendSmsAlert(rule.to, messageBody);
           } else if (rule.method === "EMAIL") {
             await sendEmailAlert(rule.to, "HugsyAlert Emergency!", messageBody);
+          } else if (rule.method === "PUSH") {
+            // New logic for push notifications
+            if ((user as any).fcm_tokens && (user as any).fcm_tokens.length > 0) {
+              functions.logger.info(`Sending PUSH notifications to ${(user as any).fcm_tokens.length} devices.`);
+              for (const token of (user as any).fcm_tokens) {
+                await sendPushNotification(token, "HugsyAlert Emergency!", messageBody);
+              }
+            } else {
+              functions.logger.warn(`User ${doc.id} has a PUSH alert rule but no FCM tokens.`);
+            }
           }
         }
       } else {

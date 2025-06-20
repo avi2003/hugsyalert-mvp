@@ -9,8 +9,8 @@ export interface User {
 
 // The shape of a single alert instruction
 export interface AlertRule {
-  method: "SMS" | "EMAIL";
-  to: string; // The phone number or email address
+  method: "SMS" | "EMAIL" | "PUSH"; // Add "PUSH"
+  to: string; // For PUSH rules, this field can be ignored
 }
 
 export interface AlertLog {
@@ -54,4 +54,5 @@ export interface HugsyUser {
   checkin_frequency_hours: number;
   pet_dossier?: PetDossier;
   alert_rules?: AlertRule[];
+  fcm_tokens?: string[]; // Add this line
 }
