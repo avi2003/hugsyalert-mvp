@@ -9,7 +9,7 @@ export interface User {
 
 // The shape of a single alert instruction
 export interface AlertRule {
-  method: "SMS" | "EMAIL" | "PUSH"; // Add "PUSH"
+  method: "SMS" | "EMAIL" | "PUSH" | "VOICE"; // Add "VOICE"
   to: string; // For PUSH rules, this field can be ignored
 }
 

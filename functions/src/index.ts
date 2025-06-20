@@ -8,6 +8,7 @@ import * as admin from "firebase-admin";
 import {sendSmsAlert} from "./services/twilio";
 import {sendEmailAlert} from "./services/sendgrid";
 import {sendPushNotification} from "./services/fcm"; // <-- Import the new service
+import {sendVoiceAlert} from "./services/twilioVoice"; // <-- Add this import
 
 // Define the secrets your project will use
 functions.setGlobalOptions({
@@ -121,6 +122,8 @@ export const scheduledAlertEngine = scheduler.onSchedule(
             } else {
               functions.logger.warn(`User ${doc.id} has a PUSH alert rule but no FCM tokens.`);
             }
+          } else if (rule.method === "VOICE") {
+            await sendVoiceAlert(rule.to, messageBody); // <-- Add this line
           }
         }
       } else {
