@@ -153,9 +153,10 @@ export const healthCheck = functions.https.onRequest(
 
 // Add this new function at the end of the file
 export const generateDossier = storage.onObjectFinalized(async (event) => {
-  const fileBucket = event.data.bucket; // The Storage bucket that contains the file.
-  const filePath = event.data.name;     // File path in the bucket.
-  const contentType = event.data.contentType; // File content type.
+  // We'll use fileBucket later when we integrate with Gemini
+  // const fileBucket = event.data.bucket;
+  const filePath = event.data.name;
+  const contentType = event.data.contentType;
 
   functions.logger.info(`New file detected: ${filePath} of type ${contentType}`);
 
