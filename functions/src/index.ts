@@ -4,11 +4,12 @@
 import {HugsyUser} from "./types"; 
 import * as functions from "firebase-functions/v2";
 import * as scheduler from "firebase-functions/v2/scheduler";
+import * as storage from "firebase-functions/v2/storage"; // Add this import
 import * as admin from "firebase-admin";
 import {sendSmsAlert} from "./services/twilio";
 import {sendEmailAlert} from "./services/sendgrid";
-import {sendPushNotification} from "./services/fcm"; // <-- Import the new service
-import {sendVoiceAlert} from "./services/twilioVoice"; // <-- Add this import
+import {sendPushNotification} from "./services/fcm";
+import {sendVoiceAlert} from "./services/twilioVoice";
 
 // Define the secrets your project will use
 functions.setGlobalOptions({
@@ -113,10 +114,13 @@ export const scheduledAlertEngine = scheduler.onSchedule(
           } else if (rule.method === "EMAIL") {
             await sendEmailAlert(rule.to, "HugsyAlert Emergency!", messageBody);
           } else if (rule.method === "PUSH") {
-            // New logic for push notifications
-            if ((user as any).fcm_tokens && (user as any).fcm_tokens.length > 0) {
-              functions.logger.info(`Sending PUSH notifications to ${(user as any).fcm_tokens.length} devices.`);
-              for (const token of (user as any).fcm_tokens) {
+            // Get FCM tokens from user with proper typing
+            const fcmTokens = (user as HugsyUser & {fcm_tokens?: string[]}).fcm_tokens;
+            
+            if (fcmTokens && fcmTokens.length > 0) {
+              functions.logger.info(`Sending PUSH notifications to ${fcmTokens.length} devices.`);
+              
+              for (const token of fcmTokens) {
                 await sendPushNotification(token, "HugsyAlert Emergency!", messageBody);
               }
             } else {
@@ -146,3 +150,15 @@ export const healthCheck = functions.https.onRequest(
     response.send("HugsyAlert backend is running!");
   }
 );
+
+// Add this new function at the end of the file
+export const generateDossier = storage.onObjectFinalized(async (event) => {
+  const fileBucket = event.data.bucket; // The Storage bucket that contains the file.
+  const filePath = event.data.name;     // File path in the bucket.
+  const contentType = event.data.contentType; // File content type.
+
+  functions.logger.info(`New file detected: ${filePath} of type ${contentType}`);
+
+  // We'll add the Gemini logic in the next step.
+  // For now, this proves the trigger is working.
+});
